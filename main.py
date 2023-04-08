@@ -1,112 +1,110 @@
+#Coding Part - Assignment 3
+#Written by Nikhil and Andrew
+#CS 4365.004
+
+#The code uses the resolution principle to prove that a clause is valid by contradiction.
+
+#Import statements to use throughout the code.
 import re
 import sys
 
+#Driver function. Main body of the code is made here.
 def main():
-    clauseNumber = 1
-    clauses = []
-    with open(sys.argv[1], errors='ignore') as input_file:
-        for i, line in enumerate(input_file):
+#Reads the file and ignores the exception errors that come with them.
+    clauseNum = 1
+    clause = []
+    with open(sys.argv[1], errors='ignore') as inputFile:
+        for item, line in enumerate(inputFile):
             line = re.sub(r'\n', '', line)
             line = re.sub(r'[ \t]+$', '', line)
-            cl = []
-            for c in line.split(" "):
-                cl.append(c)
-            clauses.append(cl)
-
-    toProve = clauses[-1]
-    del clauses[-1]
-
-    for cl in clauses:
-        print(clauseNumber, ". ", ' '.join(cl), " { }", sep='')
-        clauseNumber += 1
-
-    for c in range(len(toProve)):
-        if '~' in toProve[c]:
-            toProve[c] = re.sub(r'~', '', toProve[c])
+            x = []
+            for word in line.split(" "):
+                x.append(word)
+            clause.append(x)
+    prove = clause[-1]
+    del clause[-1]
+    for i in clause:
+        print(clauseNum, ". ", ' '.join(i), " { }", sep='')
+        clauseNum += 1
+    for j in range(len(prove)):
+        if '~' in prove[j]:
+            prove[j] = re.sub(r'~', '', prove[j])
         else:
-            toProve[c] = '~' + toProve[c]
+            prove[j] = '~' + prove[j]
+    for k in prove:
+        clause.append([k])
+        print(clauseNum, ". ", ' '.join([k]), " { }", sep='')
+        clauseNum += 1
 
-    for c in toProve:
-        clauses.append([c])
-        print(clauseNumber, ". ", ' '.join([c]), " { }", sep='')
-        clauseNumber += 1
-
-    cli = 1
-    while cli < clauseNumber - 1:
-        clj = 0
-        while clj < cli:
-            #print("testing",cli, clj)
-            result = resolve(clauses[cli], clauses[clj], clauses)
+#Checks the file and uses the resolve function to check and make sure the input passed matches the
+#specified policy stated in the assignment.
+    a = 1
+    while a < clauseNum - 1:
+        b = 0
+        while b < a:
+            result = resolve(clause[a], clause[b], clause)
             if result is False:
-                print(clauseNumber, ". ","Contradiction", ' {', cli + 1, ", ", clj + 1, '}', sep='')
-                clauseNumber += 1
+                print(clauseNum, ". ","Contradiction", ' {', a + 1, ", ", b + 1, '}', sep='')
+                clauseNum += 1
                 print("Valid")
                 sys.exit(0)
             elif result is True:
-                clj += 1
+                b += 1
                 continue
             else:
-                print(clauseNumber, ". ",' '.join(result), ' {', cli + 1, ", ", clj + 1, '}', sep='')
-                clauseNumber += 1
-                clauses.append(result)
-            clj += 1
-        cli += 1
+                print(clauseNum, ". ",' '.join(result), ' {', a + 1, ", ", b + 1, '}', sep='')
+                clauseNum += 1
+                clause.append(result)
+            b += 1
+        a += 1
     print('Not Valid')
 
-
-def resolve(c1, c2, clauses):
-    resolved2 = c1 + c2
+#Resolve function that checks and makes sure each clause is adhered to the policy.
+def resolve(x, y, clauses):
+    temp = x + y
     resolved = None
     hashmap = {}
-    for r1 in resolved2:
-        if r1 not in hashmap.keys():
-            hashmap[r1] = 0
-
+    for item in temp:
+        if item not in hashmap.keys():
+            hashmap[item] = 0
     resolved = list(hashmap.keys())
     ors = list(hashmap.keys())
-    for l1 in c1:
-        for l2 in c2:
-            if neg(l1, l2):
-                resolved.remove(l1)
-                resolved.remove(l2)
+    for line1 in x:
+        for line2 in y:
+            if negateFunction(line1, line2):
+                resolved.remove(line1)
+                resolved.remove(line2)
                 if len(resolved) is 0:
                     return False
-                elif impTrue(resolved):
+                elif validate(resolved):
                     return True
                 else:
                     for cl in clauses:
-                        if Diff(resolved, cl) == []:
-                            # print(resolved, c1)
+                        if differenceFunction(resolved, cl) == []:
                             return True
                     return resolved
-
     if resolved == ors:
         return True
-
-
-def neg(l1, l2):
-    if l1 == ('~' + l2) or l2 == ('~' + l1):
+#Negate function that negates the clause to be proved.
+def negateFunction(line1, line2):
+    if line1 == ('~' + line2) or line2 == ('~' + line1):
         return True
     else:
         return False
-
-
-def impTrue(resolved):
+#Utility function that will be used in the Resolve function.
+def validate(resolved):
     for r1 in resolved:
         for r2 in resolved:
-            if neg(r1, r2):
+            if negateFunction(r1, r2):
                 return True
     return False
-
-
-def Diff(li1, li2):
-    li_dif = [i for i in li1 + li2 if i not in li1 or i not in li2]
-    return li_dif
-
-def printFunc(cl, i1, i2):
-    for c in cl:
+#Utility function that will be used in the Resolve function.
+def differenceFunction(line1, line2):
+    a = [i for i in line1 + line2 if i not in line1 or i not in line2]
+    return a
+#Print function that will print the specified parameter that will be passed in.
+def printFunction(x):
+    for item in x:
         print()
-
-
 if __name__ == "__main__":
     main()
